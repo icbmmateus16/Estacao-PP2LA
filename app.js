@@ -985,6 +985,10 @@ function finishIntro(){
 }
 
 async function boot(){
+  // Pré-carrega a logo para evitar flash/delay na abertura
+  const logoPreload = new Image();
+  logoPreload.src = "./assets/logo.webp";
+
   document.body.classList.add("booting");
 
   buildDecor();
@@ -1013,7 +1017,7 @@ async function boot(){
   }, 850);
 
   // Mínimo ~2,4 s (impacto), segura até os dados carregarem, teto de 8 s.
-  const minShow = new Promise(r => setTimeout(r, 2400));
+  const minShow = new Promise(r => setTimeout(r, 1800));
   const maxWait = new Promise(r => setTimeout(r, 8000));
   let ok = true;
   const dataReady = loadHistory("24h").then(() => { ok = true; }).catch(() => { ok = false; });

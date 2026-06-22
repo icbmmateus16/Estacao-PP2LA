@@ -6,6 +6,7 @@
   <meta name="theme-color" content="#0b1724">
   <title>Estação PP2LA · Gama-DF</title>
   <link rel="icon" href="./assets/logo.png">
+  <link rel="preload" as="image" href="./assets/logo.webp" type="image/webp">
   <link rel="stylesheet" href="./styles.css">
   <script>
     /* Define o sentido da abertura ANTES do primeiro paint:
@@ -30,13 +31,18 @@
       <span class="sky-layer sky-night"></span>
       <span class="sky-layer sky-dawn"></span>
       <span class="sky-layer sky-day"></span>
+      <span class="intro-horizon" aria-hidden="true"></span>
       <span class="intro-stars"></span>
       <span class="intro-moon"></span>
       <span class="intro-sun"></span>
     </div>
+    <div class="intro-vignette" aria-hidden="true"></div>
     <div class="intro-content">
       <div class="intro-logo">
-        <img src="./assets/logo.png" alt="PP2LA" onerror="this.replaceWith('PP2LA')">
+        <picture>
+          <source srcset="./assets/logo.webp" type="image/webp">
+          <img src="./assets/logo.png" alt="PP2LA" onerror="this.replaceWith('PP2LA')">
+        </picture>
         <span class="intro-shine" aria-hidden="true"></span>
       </div>
       <div class="intro-title">Estação PP2LA</div>
@@ -58,7 +64,7 @@
   <main class="shell">
     <header class="topbar">
       <div class="brand">
-        <span class="brand-mark"><img src="./assets/logo.png" alt="Logo PP2LA Estação Meteorológica" onerror="this.replaceWith('PP2LA')"></span>
+        <span class="brand-mark"><picture><source srcset="./assets/logo.webp" type="image/webp"><img src="./assets/logo.png" alt="Logo PP2LA Estação Meteorológica" onerror="this.replaceWith('PP2LA')"></picture></span>
         <div>
           <h1>Estação PP2LA</h1>
           <p>Gama · Distrito Federal · Lucas Correia</p>
