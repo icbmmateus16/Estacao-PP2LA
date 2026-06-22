@@ -1341,6 +1341,12 @@ footer b{
 }
 
 /* ── Estado: carregando ─────────────────────────────────────── */
+/* Os estados do card de IA (carregando / conteúdo / erro) são alternados via
+   atributo hidden e aria-hidden. Como as classes abaixo definem display:flex,
+   elas sobrepõem o [hidden] nativo — então forçamos a ocultação aqui. */
+[hidden]{ display:none !important; }
+.ai-loading[aria-hidden="true"]{ display:none !important; }
+
 .ai-loading{
   display:flex;
   align-items:center;
