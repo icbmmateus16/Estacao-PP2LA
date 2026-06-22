@@ -429,17 +429,17 @@ body.booting{ overflow:hidden; }
 .sky-night{
   background:linear-gradient(180deg, #050b1f 0%, #0a1430 45%, #13224a 100%);
   opacity:1;
-  animation:skyNight var(--tl) ease forwards;
+  animation:skyNight var(--tl) ease both;
 }
 .sky-dawn{
   background:linear-gradient(180deg, #243a6e 0%, #7d6aa6 38%, #e98c5a 74%, #ffc46b 100%);
   opacity:0;
-  animation:skyDawn var(--tl) ease forwards;
+  animation:skyDawn var(--tl) ease both;
 }
 .sky-day{
   background:linear-gradient(180deg, #2f9fe0 0%, #57b7e9 45%, #9fd9ee 78%, #f3e09a 100%);
   opacity:0;
-  animation:skyDay var(--tl) ease forwards;
+  animation:skyDay var(--tl) ease both;
 }
 @keyframes skyNight{ 0%{opacity:1} 38%{opacity:1} 64%{opacity:0} 100%{opacity:0} }
 @keyframes skyDawn{ 0%{opacity:0} 30%{opacity:0} 56%{opacity:1} 84%{opacity:.5} 100%{opacity:0} }
@@ -463,7 +463,7 @@ body.booting{ overflow:hidden; }
     radial-gradient(1px 1px at 62% 64%, #fff, transparent);
   background-repeat:no-repeat;
   opacity:.9;
-  animation:skyStars var(--tl) ease forwards;
+  animation:skyStars var(--tl) ease both;
 }
 @keyframes skyStars{ 0%{opacity:.9} 34%{opacity:.85} 60%{opacity:0} 100%{opacity:0} }
 
@@ -472,24 +472,65 @@ body.booting{ overflow:hidden; }
   position:absolute;
   top:13%;
   right:19%;
-  width:clamp(4.2rem, 9vw, 6.4rem);
-  height:clamp(4.2rem, 9vw, 6.4rem);
+  width:clamp(4.4rem, 9vw, 6.6rem);
+  height:clamp(4.4rem, 9vw, 6.6rem);
   border-radius:50%;
   opacity:0;
 }
+
+/* ---- Lua realista: esfera sombreada + crateras + brilho frio ---- */
 .intro-moon{
-  background:radial-gradient(circle at 40% 38%, #fdfdff, #d3ddf2 58%, rgba(200,210,235,0) 72%);
-  box-shadow:0 0 3rem rgba(210,222,248,.5);
-  opacity:.9;
-  animation:skyMoon var(--tl) ease forwards;
+  background:
+    radial-gradient(circle at 30% 26%, rgba(120,134,168,.45) 0, rgba(120,134,168,.45) .18rem, rgba(120,134,168,0) .4rem),
+    radial-gradient(circle at 62% 40%, rgba(108,122,156,.42) 0, rgba(108,122,156,.42) .3rem, rgba(108,122,156,0) .58rem),
+    radial-gradient(circle at 46% 66%, rgba(108,122,156,.34) 0, rgba(108,122,156,.34) .22rem, rgba(108,122,156,0) .48rem),
+    radial-gradient(circle at 72% 70%, rgba(108,122,156,.3) 0, rgba(108,122,156,.3) .16rem, rgba(108,122,156,0) .34rem),
+    radial-gradient(circle at 24% 54%, rgba(108,122,156,.28) 0, rgba(108,122,156,.28) .12rem, rgba(108,122,156,0) .26rem),
+    radial-gradient(circle at 38% 36%, #ffffff 0%, #eaf0fb 24%, #ccd6ec 56%, #aab6d4 82%, #95a2c2 100%);
+  box-shadow:
+    inset -1.15rem -.95rem 1.9rem rgba(30,42,74,.6),
+    inset .55rem .65rem 1.5rem rgba(255,255,255,.22),
+    0 0 2.4rem .3rem rgba(200,214,245,.5),
+    0 0 6.5rem 1.6rem rgba(150,170,220,.26);
+  opacity:.92;
+  animation:skyMoon var(--tl) ease both;
 }
+
+/* ---- Sol realista: núcleo incandescente + corona + bloom em camadas ---- */
 .intro-sun{
-  background:radial-gradient(circle, #fff7d6, #ffd36b 46%, rgba(255,180,60,0) 72%);
-  box-shadow:0 0 4.5rem 1rem rgba(255,210,120,.55);
-  animation:skySun var(--tl) ease forwards;
+  background:
+    radial-gradient(circle at 50% 48%,
+      #fffdf6 0%, #fff7d6 13%, #ffe79f 32%, #ffd062 52%,
+      #ffb43f 72%, #ff9627 88%, rgba(255,140,30,0) 100%);
+  box-shadow:
+    0 0 1.8rem .3rem rgba(255,226,150,.7),
+    0 0 4rem 1rem rgba(255,190,92,.5),
+    0 0 8rem 2.6rem rgba(255,152,56,.3),
+    0 0 14rem 5rem rgba(255,132,42,.16);
+  animation:skySun var(--tl) ease both;
 }
-@keyframes skyMoon{ 0%{opacity:.9; transform:translateY(0)} 42%{opacity:.75} 60%{opacity:0; transform:translateY(1.6rem)} 100%{opacity:0} }
+.intro-sun::before{
+  content:"";
+  position:absolute;
+  inset:-46%;
+  border-radius:50%;
+  background:radial-gradient(circle, rgba(255,228,150,.32), rgba(255,180,80,0) 66%);
+  filter:blur(6px);
+  animation:sunPulse 3.4s ease-in-out infinite;
+}
+@keyframes sunPulse{ 0%,100%{ transform:scale(.92); opacity:.7; } 50%{ transform:scale(1.06); opacity:1; } }
+@keyframes skyMoon{ 0%{opacity:.92; transform:translateY(0)} 42%{opacity:.78} 60%{opacity:0; transform:translateY(1.6rem)} 100%{opacity:0} }
 @keyframes skySun{ 0%{opacity:0; transform:translateY(7rem) scale(.82)} 54%{opacity:0} 80%{opacity:1} 100%{opacity:1; transform:translateY(0) scale(1)} }
+
+/* ---- Abertura invertida (sistema aberto à noite): dia → noite ---- */
+[data-intro="night"] .sky-night,
+[data-intro="night"] .sky-dawn,
+[data-intro="night"] .sky-day,
+[data-intro="night"] .intro-stars,
+[data-intro="night"] .intro-moon,
+[data-intro="night"] .intro-sun{
+  animation-direction:reverse;
+}
 
 .intro-content{
   position:relative;
