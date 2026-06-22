@@ -507,6 +507,7 @@ function updateCurrent(d){
   const hour = brasiliaHour();
 
   state.lastWeather = { rain, temp, umi };
+  renderAIAlerts(d);
 
   $("heroTemp").textContent = fmt(temp, 1);
   $("heroDesc").textContent = weatherText(temp, umi, rain, hour);
@@ -1074,6 +1075,121 @@ function typewriter(el, text, speed = 14) {
   });
 }
 
+function cleanSeries(arr){
+  return (arr || []).map(num).filter(v => v != null);
+}
+
+function recentDelta(arr, size = 6){
+  const vals = cleanSeries(arr);
+  if(vals.length < 2) return null;
+  const from = vals[Math.max(0, vals.length - size)];
+  const to = vals[vals.length - 1];
+  return to - from;
+}
+
+function recentWindow(arr, size = 8){
+  return cleanSeries(arr).slice(-size);
+}
+
+function clamp(n, min, max){
+  return Math.max(min, Math.min(max, n));
+}
+
+function setAIAlertCard(cardId, valueId, detailId, value, detail, level){
+  const card = $(cardId);
+  const valueEl = $(valueId);
+  const detailEl = $(detailId);
+  if(valueEl) valueEl.textContent = value;
+  if(detailEl) detailEl.textContent = detail;
+  if(card) card.dataset.level = level || "low";
+}
+
+function renderAIAlerts(d){
+  if(!d || !d.time || !d.time.length || !$("aiAlerts")) return;
+
+  const c = extractCurrent(d);
+  const recentRain = recentWindow(d.rain, 10);
+  const maxRain = recentRain.length ? Math.max(...recentRain) : 0;
+  const avgRain = recentRain.length ? recentRain.reduce((a, b) => a + b, 0) / recentRain.length : 0;
+  const qnhDelta = recentDelta(d.qnh, 8);
+  const spread = c.temp != null && c.dew != null ? c.temp - c.dew : null;
+
+  let rainScore = 0;
+  if((c.rain || 0) >= 25) rainScore += 72;
+  else if((c.rain || 0) >= 5) rainScore += 52;
+  else if(maxRain >= 5) rainScore += 18;
+
+  if((c.umi || 0) >= 88) rainScore += 24;
+  else if((c.umi || 0) >= 75) rainScore += 16;
+  else if((c.umi || 0) >= 62) rainScore += 8;
+
+  if(spread != null && spread <= 2) rainScore += 24;
+  else if(spread != null && spread <= 4) rainScore += 16;
+  else if(spread != null && spread <= 7) rainScore += 8;
+
+  if(qnhDelta != null && qnhDelta <= -1.5) rainScore += 14;
+  else if(qnhDelta != null && qnhDelta <= -.5) rainScore += 8;
+  if(avgRain >= 2 && (c.rain || 0) < 5) rainScore += 8;
+
+  rainScore = Math.round(clamp(rainScore, 0, 100));
+  const rainLevel = rainScore >= 70 ? "high" : rainScore >= 40 ? "medium" : "low";
+  const rainDetail = (c.rain || 0) >= 5
+    ? `chuva ativa em ${fmt(c.rain, 0)}%`
+    : rainScore >= 40
+      ? "umidade e tendência pedem atenção"
+      : "baixo sinal de chuva agora";
+  setAIAlertCard("aiRainRiskCard", "aiRainRisk", "aiRainDetail", `${rainScore}%`, rainDetail, rainLevel);
+
+  const pressureDelta = qnhDelta != null ? qnhDelta : recentDelta(d.pabs, 8);
+  let pressureValue = "Estável";
+  let pressureDetail = "sem queda relevante";
+  let pressureLevel = "low";
+  if(pressureDelta != null){
+    const abs = Math.abs(pressureDelta);
+    const suffix = `${pressureDelta > 0 ? "+" : ""}${pressureDelta.toFixed(1)} hPa`;
+    if(pressureDelta <= -1.6){
+      pressureValue = "Atenção";
+      pressureDetail = `pressão caindo ${suffix}`;
+      pressureLevel = "high";
+    }else if(pressureDelta <= -.6){
+      pressureValue = "Oscilando";
+      pressureDetail = `leve queda ${suffix}`;
+      pressureLevel = "medium";
+    }else if(abs <= .5){
+      pressureDetail = `variação ${suffix}`;
+    }else{
+      pressureValue = "Em alta";
+      pressureDetail = `pressão subindo ${suffix}`;
+    }
+  }
+  setAIAlertCard("aiPressureRiskCard", "aiPressureRisk", "aiPressureDetail", pressureValue, pressureDetail, pressureLevel);
+
+  let comfortValue = "Confortável";
+  let comfortDetail = "sem desconforto relevante";
+  let comfortLevel = "low";
+  const feel = c.feel != null ? c.feel : c.temp;
+  if((c.rain || 0) >= 5){
+    comfortValue = "Chuva";
+    comfortDetail = "atenção a piso molhado";
+    comfortLevel = "medium";
+  }else if((feel || 0) >= 32){
+    comfortValue = "Calor alto";
+    comfortDetail = `sensação em ${fmt(feel, 1)}°C`;
+    comfortLevel = "high";
+  }else if((c.umi || 100) <= 35){
+    comfortValue = "Ar seco";
+    comfortDetail = `umidade em ${fmt(c.umi, 0)}%`;
+    comfortLevel = "medium";
+  }else if((c.umi || 0) >= 82 && (feel || 0) >= 27){
+    comfortValue = "Abafado";
+    comfortDetail = `umidade em ${fmt(c.umi, 0)}%`;
+    comfortLevel = "medium";
+  }else if(feel != null){
+    comfortDetail = `sensação em ${fmt(feel, 1)}°C`;
+  }
+  setAIAlertCard("aiComfortRiskCard", "aiComfortRisk", "aiComfortDetail", comfortValue, comfortDetail, comfortLevel);
+}
+
 function aiSetLoading() {
   $("aiLoading").removeAttribute("aria-hidden");
   $("aiContent").hidden  = true;
@@ -1152,6 +1268,7 @@ async function fetchAIAnalysis(data) {
     return;
   }
 
+  renderAIAlerts(d);
   aiSetLoading();
 
   try {

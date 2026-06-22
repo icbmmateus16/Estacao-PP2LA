@@ -1295,7 +1295,7 @@ footer b{
    ═══════════════════════════════════════════════════════════════ */
 
 .ai-section{
-  margin-top:3rem;
+  margin-top:2.8rem;
 }
 
 .ai-badge{
@@ -1315,10 +1315,16 @@ footer b{
 /* ── Card principal ─────────────────────────────────────────── */
 .ai-card{
   position:relative;
-  padding:1.6rem 1.8rem 1.2rem;
-  border-radius:var(--radius);
-  min-height:9rem;
+  padding:1.35rem;
+  border:1px solid rgba(255,255,255,.22);
+  border-radius:1.25rem;
+  min-height:10rem;
   overflow:hidden;
+  background:
+    radial-gradient(circle at 12% 0%, rgba(145,112,255,.2), rgba(145,112,255,0) 18rem),
+    linear-gradient(180deg, rgba(8,20,36,.78), rgba(6,16,29,.68)),
+    rgba(4,12,24,.74);
+  box-shadow:0 1.6rem 4rem rgba(0,35,65,.22), inset 0 1px 0 rgba(255,255,255,.16);
 }
 
 /* Borda esquerda com gradiente roxo-azul (identidade IA) */
@@ -1340,6 +1346,11 @@ footer b{
   pointer-events:none;
 }
 
+.ai-card > *{
+  position:relative;
+  z-index:1;
+}
+
 /* ── Estado: carregando ─────────────────────────────────────── */
 /* Os estados do card de IA (carregando / conteúdo / erro) são alternados via
    atributo hidden e aria-hidden. Como as classes abaixo definem display:flex,
@@ -1351,6 +1362,7 @@ footer b{
   display:flex;
   align-items:center;
   gap:1.2rem;
+  margin-bottom:1rem;
 }
 
 /* Orbe animado "pensando" */
@@ -1405,51 +1417,131 @@ footer b{
   100%{ background-position:-200% 0; }
 }
 
+/* ── Alertas rápidos ───────────────────────────────────────── */
+.ai-alerts{
+  display:grid;
+  grid-template-columns:repeat(3, minmax(0, 1fr));
+  gap:.8rem;
+}
+
+.ai-alert-card{
+  min-height:6.4rem;
+  display:grid;
+  grid-template-rows:auto 1fr auto;
+  gap:.45rem;
+  padding:.95rem 1rem;
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:.95rem;
+  background:
+    radial-gradient(circle at 18% 0%, rgba(255,255,255,.12), rgba(255,255,255,0) 9rem),
+    rgba(2,10,20,.44);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.12);
+}
+
+.ai-alert-card span{
+  color:rgba(255,255,255,.68);
+  font-size:.72rem;
+  font-weight:900;
+  text-transform:uppercase;
+  letter-spacing:0;
+}
+
+.ai-alert-card strong{
+  align-self:center;
+  color:#fff;
+  font-size:clamp(1.55rem, 2.35vw, 2.05rem);
+  line-height:1;
+  font-weight:900;
+  font-variant-numeric:tabular-nums;
+}
+
+.ai-alert-card em{
+  color:rgba(220,245,255,.82);
+  font-size:.82rem;
+  font-style:normal;
+  font-weight:750;
+  line-height:1.25;
+}
+
+.ai-alert-card[data-level="low"]{
+  border-color:rgba(105,240,174,.22);
+}
+
+.ai-alert-card[data-level="low"] strong{
+  color:#b9ffd9;
+}
+
+.ai-alert-card[data-level="medium"]{
+  border-color:rgba(255,213,79,.32);
+  background:
+    radial-gradient(circle at 18% 0%, rgba(255,213,79,.16), rgba(255,213,79,0) 9rem),
+    rgba(28,22,8,.42);
+}
+
+.ai-alert-card[data-level="medium"] strong{
+  color:#ffe08a;
+}
+
+.ai-alert-card[data-level="high"]{
+  border-color:rgba(255,112,67,.42);
+  background:
+    radial-gradient(circle at 18% 0%, rgba(255,112,67,.18), rgba(255,112,67,0) 9rem),
+    rgba(34,12,8,.46);
+}
+
+.ai-alert-card[data-level="high"] strong{
+  color:#ffb09a;
+}
+
 /* ── Estado: conteúdo ───────────────────────────────────────── */
 .ai-content{
   display:flex;
   flex-direction:column;
-  gap:1.1rem;
+  gap:.8rem;
+  margin-top:1rem;
 }
 
 .ai-block{
   display:flex;
   flex-direction:column;
-  gap:.3rem;
-  padding-bottom:1rem;
-  border-bottom:1px solid rgba(255,255,255,.07);
+  gap:.42rem;
+  padding:1rem 1.08rem;
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:.95rem;
+  background:linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.035));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.1);
 }
 
 .ai-block:last-child{
-  border-bottom:none;
-  padding-bottom:0;
+  padding-bottom:1rem;
 }
 
 .ai-block-label{
-  font-size:.72rem;
-  font-weight:700;
-  letter-spacing:.08em;
+  font-size:.74rem;
+  font-weight:900;
+  letter-spacing:0;
   text-transform:uppercase;
-  color:rgba(160,130,255,.85);
+  color:#cbbdff;
 }
 
 .ai-block--alert .ai-block-label{
-  color:rgba(255,185,80,.9);
+  color:#ffd27f;
 }
 
 .ai-block--alert{
-  background:rgba(255,150,30,.06);
-  border:1px solid rgba(255,160,40,.18);
-  border-radius:.65rem;
-  padding:.8rem 1rem;
+  background:
+    linear-gradient(180deg, rgba(255,190,80,.12), rgba(255,160,60,.055)),
+    rgba(26,18,8,.32);
+  border-color:rgba(255,190,80,.28);
 }
 
 .ai-text{
-  font-size:.97rem;
-  line-height:1.65;
-  color:rgba(255,255,255,.88);
+  font-size:clamp(1rem, 1.25vw, 1.08rem);
+  line-height:1.72;
+  color:rgba(255,255,255,.96);
   margin:0;
   min-height:1.3em;
+  text-shadow:0 1px 1px rgba(0,0,0,.18);
 }
 
 /* Cursor de digitação */
@@ -1537,6 +1629,12 @@ footer b{
 }
 
 /* ── Responsivo ─────────────────────────────────────────────── */
+@media (max-width:900px){
+  .ai-alerts{
+    grid-template-columns:1fr;
+  }
+}
+
 @media (max-width:600px){
   .ai-card{
     padding:1.2rem 1.2rem 1rem;

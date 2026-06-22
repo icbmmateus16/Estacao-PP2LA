@@ -146,6 +146,24 @@
           </div>
         </div>
 
+        <div class="ai-alerts" id="aiAlerts" aria-label="Alertas rápidos da estação">
+          <article class="ai-alert-card" id="aiRainRiskCard">
+            <span>Chance de chuva</span>
+            <strong id="aiRainRisk">--</strong>
+            <em id="aiRainDetail">aguardando leitura</em>
+          </article>
+          <article class="ai-alert-card" id="aiPressureRiskCard">
+            <span>Pressão</span>
+            <strong id="aiPressureRisk">--</strong>
+            <em id="aiPressureDetail">aguardando leitura</em>
+          </article>
+          <article class="ai-alert-card" id="aiComfortRiskCard">
+            <span>Conforto</span>
+            <strong id="aiComfortRisk">--</strong>
+            <em id="aiComfortDetail">aguardando leitura</em>
+          </article>
+        </div>
+
         <!-- Estado: conteúdo -->
         <div class="ai-content" id="aiContent" hidden>
           <div class="ai-block" id="aiResumo">
@@ -157,7 +175,7 @@
             <p class="ai-text" id="aiTendenciaText"></p>
           </div>
           <div class="ai-block ai-block--alert" id="aiAlerta" hidden>
-            <span class="ai-block-label">⚠ Alerta</span>
+            <span class="ai-block-label">Alerta</span>
             <p class="ai-text" id="aiAlertaText"></p>
           </div>
         </div>
