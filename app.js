@@ -62,7 +62,7 @@ function dayPhase(hour){
   if(hour >= 17 && hour < 18) return "golden";
   if(hour >= 18 && hour < 18.75) return "dusk";
   if(hour >= 18.75 && hour < 19.75) return "twilight";
-  if(hour >= 19.75 && hour < 22) return "evening";
+  if(hour >= 19.75 && hour < 20) return "evening";
   return "night";
 }
 
@@ -329,7 +329,7 @@ function initSky3D(){
     // Mantém a cena 3D sincronizada com o tema (data-sky/data-weather),
     // inclusive quando o estado é forçado só via CSS (showcase/testes) —
     // assim a lua nunca fica como "sol" num tema noturno.
-    const HOUR_BY_SKY = { dawn:5.5, morning:8, noon:12, afternoon:16, golden:17.5, dusk:18.4, twilight:19.2, evening:20.5, night:23 };
+    const HOUR_BY_SKY = { dawn:5.5, morning:8, noon:12, afternoon:16, golden:17.5, dusk:18.4, twilight:19.2, evening:19.85, night:21 };
     const WX_BY_WEATHER = { clear:[0,55,26], dry:[0,20,34], cloudy:[0,88,24], rain:[38,94,22], storm:[87,98,19] };
     const syncFromAttrs = () => {
       const h = HOUR_BY_SKY[document.body.dataset.sky] ?? 12;
