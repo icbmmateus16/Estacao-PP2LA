@@ -8,7 +8,7 @@ exports.handler = async event => {
   };
 
   try{
-    const source = process.env.WEATHER_API_URL;
+    const source = process.env.WEATHER_API_URL?.trim();
     if(!source){
       return {
         statusCode:500,
@@ -19,7 +19,16 @@ exports.handler = async event => {
 
     const requested = event.queryStringParameters?.period || "24h";
     const period = ALLOWED_PERIODS.has(requested) ? requested : "24h";
-    const url = new URL(source);
+    let url;
+    try{
+      url = new URL(source);
+    }catch(error){
+      return {
+        statusCode:500,
+        headers,
+        body:JSON.stringify({ error:"Invalid WEATHER_API_URL. Use a complete https:// URL." })
+      };
+    }
     url.searchParams.set("action", "read");
     url.searchParams.set("period", period);
 
@@ -32,16 +41,25 @@ exports.handler = async event => {
     clearTimeout(timeout);
 
     const text = await response.text();
+    if(!response.ok){
+      return {
+        statusCode:response.status,
+        headers,
+        body:JSON.stringify({ error:"Weather upstream returned an error", status:response.status })
+      };
+    }
+
     return {
-      statusCode:response.ok ? 200 : response.status,
+      statusCode:200,
       headers,
       body:text
     };
   }catch(error){
+    const reason = error.name === "AbortError" ? "Weather upstream timeout" : "Weather upstream unavailable";
     return {
       statusCode:502,
       headers,
-      body:JSON.stringify({ error:"Weather upstream unavailable" })
+      body:JSON.stringify({ error:reason })
     };
   }
 };
