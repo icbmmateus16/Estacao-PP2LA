@@ -245,10 +245,11 @@ function initSky3D(){
     root.add(sun);
 
     const moon = makeCelestial(T, {
-      core:["rgba(255,255,255,.95)", "rgba(198,213,242,.9)", "rgba(198,213,242,0)"],
-      halo:["rgba(191,211,255,.26)", "rgba(137,171,255,.12)", "rgba(137,171,255,0)"],
-      glare:["rgba(255,255,255,.12)", "rgba(197,214,255,.05)", "rgba(197,214,255,0)"],
-      scale:7.2
+      core:["rgba(248,250,255,.98)", "rgba(206,219,242,.92)", "rgba(198,213,242,0)"],
+      halo:["rgba(176,198,245,.22)", "rgba(120,156,235,.1)", "rgba(120,156,235,0)"],
+      glare:["rgba(255,255,255,0)", "rgba(255,255,255,0)", "rgba(255,255,255,0)"],
+      glow:.38,
+      scale:6.4
     });
     moon.position.set(11, 8, -8);
     moon.visible = false;
@@ -343,52 +344,42 @@ function makeRadialTexture(T, stops, size = 512){
   return texture;
 }
 
-function makeCloudTexture(T, seed = 1, size = 768){
+function makeCloudTexture(T, seed = 1, size = 512){
   const canvas = document.createElement("canvas");
   canvas.width = size;
   canvas.height = size;
   const ctx = canvas.getContext("2d");
   ctx.clearRect(0, 0, size, size);
-  ctx.filter = "blur(16px)";
+  const rnd = n => { const x = Math.sin(seed * 53.13 + n * 12.9898) * 43758.5453; return x - Math.floor(x); };
 
-  const blobs = [
-    [.18, .55, .32, .62],
-    [.35, .42, .38, .75],
-    [.55, .48, .46, .88],
-    [.74, .55, .34, .66],
-    [.46, .66, .58, .52],
-    [.64, .34, .28, .45]
-  ];
-
-  blobs.forEach(([x, y, r, a], i) => {
-    const wobble = Math.sin(seed * 11 + i * 3.7) * .045;
-    const gx = size * (x + wobble);
-    const gy = size * (y - wobble * .6);
-    const radius = size * r;
-    const g = ctx.createRadialGradient(gx, gy, 0, gx, gy, radius);
-    g.addColorStop(0, `rgba(255,255,255,${a})`);
-    g.addColorStop(.5, `rgba(230,244,250,${a * .42})`);
+  // Cúmulo: base achatada embaixo, topo arredondado em "couve-flor".
+  ctx.filter = "blur(6px)";
+  const flatY = size * 0.62;
+  const puffs = 9;
+  for(let i = 0; i < puffs; i++){
+    const t = i / (puffs - 1);                       // esquerda → direita
+    const arch = Math.sin(t * Math.PI);              // mais alto no meio
+    const cx = size * (0.16 + 0.68 * t) + (rnd(i) - .5) * size * 0.04;
+    const cy = flatY - arch * size * (0.13 + 0.09 * rnd(i + 3)) - size * 0.02;
+    const r  = size * (0.085 + 0.115 * arch) * (0.82 + 0.42 * rnd(i + 7));
+    const g = ctx.createRadialGradient(cx, cy, r * 0.12, cx, cy, r);
+    g.addColorStop(0, "rgba(255,255,255,0.96)");
+    g.addColorStop(0.55, "rgba(247,251,255,0.58)");
     g.addColorStop(1, "rgba(255,255,255,0)");
     ctx.fillStyle = g;
-    ctx.beginPath();
-    ctx.arc(gx, gy, radius, 0, Math.PI * 2);
-    ctx.fill();
-  });
-
-  ctx.filter = "blur(38px)";
-  const shadow = ctx.createRadialGradient(size * .52, size * .7, 0, size * .52, size * .68, size * .44);
-  shadow.addColorStop(0, "rgba(35,66,80,.28)");
-  shadow.addColorStop(1, "rgba(35,66,80,0)");
-  ctx.fillStyle = shadow;
-  ctx.fillRect(0, 0, size, size);
-  ctx.globalCompositeOperation = "destination-in";
-  const mask = ctx.createRadialGradient(size * .5, size * .54, size * .1, size * .5, size * .54, size * .62);
-  mask.addColorStop(0, "rgba(0,0,0,1)");
-  mask.addColorStop(.68, "rgba(0,0,0,.86)");
-  mask.addColorStop(1, "rgba(0,0,0,0)");
-  ctx.fillStyle = mask;
-  ctx.fillRect(0, 0, size, size);
-  ctx.globalCompositeOperation = "source-over";
+    ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill();
+  }
+  // preenche o corpo logo acima da base achatada
+  for(let i = 0; i < 6; i++){
+    const cx = size * (0.24 + 0.52 * (i / 5));
+    const cy = flatY - size * 0.04;
+    const r = size * 0.1 * (0.9 + 0.4 * rnd(i + 13));
+    const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
+    g.addColorStop(0, "rgba(252,254,255,0.82)");
+    g.addColorStop(1, "rgba(255,255,255,0)");
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill();
+  }
 
   const texture = new T.CanvasTexture(canvas);
   texture.needsUpdate = true;
@@ -397,6 +388,7 @@ function makeCloudTexture(T, seed = 1, size = 768){
 
 function makeCelestial(T, palette){
   const group = new T.Group();
+  const glow = palette.glow == null ? 1 : palette.glow;   // 1 = sol radiante, <1 = lua discreta
   const coreTexture = makeRadialTexture(T, [
     [0, palette.core[0]],
     [.34, palette.core[1]],
@@ -407,20 +399,23 @@ function makeCelestial(T, palette){
     [.45, palette.halo[1]],
     [1, palette.halo[2]]
   ]);
-  const glareTexture = makeRadialTexture(T, [
-    [0, palette.glare[0]],
-    [.26, palette.glare[1]],
-    [1, palette.glare[2]]
-  ]);
 
-  const halo = new T.Sprite(new T.SpriteMaterial({ map:haloTexture, transparent:true, depthWrite:false, opacity:.92 }));
-  halo.scale.set(palette.scale * 2.6, palette.scale * 2.6, 1);
+  const halo = new T.Sprite(new T.SpriteMaterial({ map:haloTexture, transparent:true, depthWrite:false, opacity:.92 * glow }));
+  halo.scale.set(palette.scale * (1.5 + 1.1 * glow), palette.scale * (1.5 + 1.1 * glow), 1);
   group.add(halo);
 
-  const glare = new T.Sprite(new T.SpriteMaterial({ map:glareTexture, transparent:true, depthWrite:false, opacity:.7 }));
-  glare.scale.set(palette.scale * 3.9, palette.scale * 1.2, 1);
-  glare.rotation.z = -.36;
-  group.add(glare);
+  // O "glare" (raio alongado) é exclusivo do sol; a lua não tem.
+  if(glow > .7){
+    const glareTexture = makeRadialTexture(T, [
+      [0, palette.glare[0]],
+      [.26, palette.glare[1]],
+      [1, palette.glare[2]]
+    ]);
+    const glare = new T.Sprite(new T.SpriteMaterial({ map:glareTexture, transparent:true, depthWrite:false, opacity:.7 }));
+    glare.scale.set(palette.scale * 3.9, palette.scale * 1.2, 1);
+    glare.rotation.z = -.36;
+    group.add(glare);
+  }
 
   const core = new T.Sprite(new T.SpriteMaterial({ map:coreTexture, transparent:true, depthWrite:false, opacity:.95 }));
   core.scale.set(palette.scale, palette.scale, 1);
@@ -448,17 +443,16 @@ function makeCloud(T, x, y, z, scale, opacity){
   group.userData.baseScale = scale;
   group.userData.baseOpacity = opacity;
 
-  for(let i = 0; i < 3; i++){
+  for(let i = 0; i < 2; i++){
     const material = new T.SpriteMaterial({
-      map:makeCloudTexture(T, scale * 10 + i),
+      map:makeCloudTexture(T, scale * 10 + i * 3.3),
       transparent:true,
       depthWrite:false,
-      opacity:opacity * (1 - i * .18)
+      opacity:opacity * (1 - i * .28)
     });
     const sprite = new T.Sprite(material);
-    sprite.position.set((i - 1) * 2.4, (i % 2) * .36, -i * .45);
-    sprite.scale.set(13 * scale * (1 + i * .16), 4.8 * scale * (1 + i * .1), 1);
-    sprite.rotation.z = (i - 1) * .035;
+    sprite.position.set(i * 2.6, i * .5, -i * .5);
+    sprite.scale.set(12 * scale * (1 + i * .12), 5 * scale * (1 + i * .08), 1);
     group.add(sprite);
   }
   return group;
@@ -477,10 +471,10 @@ function updateSky3D(mode){
   s.sun.position.set(mode.sunX, mode.sunY, -10);
   s.moon.position.set(11, 6.8, -10);
   s.clouds.forEach((cloud, i) => {
-    cloud.visible = mode.clouds > .015;
+    cloud.visible = mode.clouds > .14;
     const base = cloud.userData.baseOpacity || .26;
     cloud.children.forEach(part => {
-      part.material.opacity = Math.min(.82, base * (.25 + mode.clouds * 1.65) * (night ? .58 : 1));
+      part.material.opacity = Math.min(.9, base * (.6 + mode.clouds * 1.7) * (night ? .62 : 1));
     });
     cloud.scale.setScalar((cloudy ? 1.12 : .92) * (mode.condition === "storm" ? 1.24 : 1));
   });
