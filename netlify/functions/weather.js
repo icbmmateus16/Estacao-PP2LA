@@ -55,7 +55,12 @@ exports.handler = async event => {
       body:text
     };
   }catch(error){
-    const reason = error.name === "AbortError" ? "Weather upstream timeout" : "Weather upstream unavailable";
+    const source = process.env.WEATHER_API_URL?.trim() || "";
+    let host = "(unknown)";
+    try{ host = new URL(source).hostname; }catch(_){}
+    const reason = error.name === "AbortError"
+      ? "Weather upstream timeout"
+      : `Weather upstream unavailable (${host}): ${error.message}`;
     return {
       statusCode:502,
       headers,
