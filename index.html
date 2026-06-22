@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0b1724">
+  <title>Estação PP2LA · Gama-DF</title>
+  <link rel="icon" href="./assets/logo.png">
+  <link rel="stylesheet" href="./styles.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script defer src="./app.js"></script>
+</head>
+<body data-sky="noon" data-weather="clear" class="booting">
+  <div id="intro" class="intro" role="status" aria-label="Carregando a estação PP2LA">
+    <div class="intro-sky" aria-hidden="true">
+      <span class="sky-layer sky-night"></span>
+      <span class="sky-layer sky-dawn"></span>
+      <span class="sky-layer sky-day"></span>
+      <span class="intro-stars"></span>
+      <span class="intro-moon"></span>
+      <span class="intro-sun"></span>
+    </div>
+    <div class="intro-content">
+      <div class="intro-logo">
+        <img src="./assets/logo.png" alt="PP2LA" onerror="this.replaceWith('PP2LA')">
+        <span class="intro-shine" aria-hidden="true"></span>
+      </div>
+      <div class="intro-title">Estação PP2LA</div>
+      <div class="intro-sub">Gama · Distrito Federal</div>
+      <div class="intro-bar"><span class="intro-bar-fill"></span></div>
+      <div class="intro-foot">
+        <span class="intro-status" id="introStatus">Iniciando…</span>
+        <span class="intro-pct" id="introPct">0%</span>
+      </div>
+    </div>
+  </div>
+
+  <canvas id="sky3d" class="sky-canvas" aria-hidden="true"></canvas>
+  <div id="skyEffects" aria-hidden="true">
+    <div id="stars"></div>
+    <div id="rain"></div>
+  </div>
+
+  <main class="shell">
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark"><img src="./assets/logo.png" alt="Logo PP2LA Estação Meteorológica" onerror="this.replaceWith('PP2LA')"></span>
+        <div>
+          <h1>Estação PP2LA</h1>
+          <p>Gama · Distrito Federal · Lucas Correia</p>
+        </div>
+      </div>
+      <div class="live-pill">
+        <span class="live-dot"></span>
+        <span id="liveTxt">atualizado às --:--</span>
+      </div>
+    </header>
+
+    <section class="hero-grid" aria-label="Condição atual">
+      <article class="current-card">
+        <div class="current-content">
+          <div class="context-row">
+            <span id="skyLabel">Sincronizando céu</span>
+            <span id="clockTxt">--:-- BRT</span>
+          </div>
+          <div class="temperature"><span id="heroTemp">--</span><small>°C</small></div>
+          <div class="condition" id="heroDesc">Carregando telemetria...</div>
+          <div class="range" id="heroMM">máx <b>--°</b> · mín <b>--°</b></div>
+        </div>
+      </article>
+
+      <aside class="trend-card glass">
+        <span class="eyebrow">Tendência atmosférica</span>
+        <strong id="trendTxt">Aguardando dados...</strong>
+        <div class="trend-line" aria-hidden="true"></div>
+      </aside>
+    </section>
+
+    <section class="stats-grid" aria-label="Leituras atuais">
+      <article class="stat-card glass">
+        <span>Sensação</span>
+        <strong><span id="vFeel">--</span><small>°C</small></strong>
+        <em id="sFeel"></em>
+      </article>
+      <article class="stat-card glass">
+        <span>Umidade</span>
+        <strong><span id="vUmi">--</span><small>%</small></strong>
+        <em id="sUmi"></em>
+      </article>
+      <article class="stat-card glass">
+        <span>Ponto de orvalho</span>
+        <strong><span id="vDew">--</span><small>°C</small></strong>
+        <em>condensação</em>
+      </article>
+      <article class="stat-card glass">
+        <span>Chuva</span>
+        <strong><span id="vRain">--</span><small>%</small></strong>
+        <em id="sRain"></em>
+      </article>
+      <article class="stat-card glass">
+        <span>Pressão QNH</span>
+        <strong><span id="vQnh">--</span><small>hPa</small></strong>
+        <em>altímetro</em>
+      </article>
+      <article class="stat-card glass">
+        <span>Pressão absoluta</span>
+        <strong><span id="vPabs">--</span><small>hPa</small></strong>
+        <em>no local</em>
+      </article>
+    </section>
+
+    <nav class="periods" aria-label="Período dos gráficos">
+      <button class="pbtn active" type="button" data-p="24h" aria-pressed="true">24 horas</button>
+      <button class="pbtn" type="button" data-p="week" aria-pressed="false">1 semana</button>
+      <button class="pbtn" type="button" data-p="month" aria-pressed="false">1 mês</button>
+      <button class="pbtn" type="button" data-p="year" aria-pressed="false">1 ano</button>
+      <button class="pbtn" type="button" data-p="decade" aria-pressed="false">1 década</button>
+    </nav>
+
+    <div id="status" class="status">Sincronizando...</div>
+
+    <section class="analytics" aria-label="Dados meteorológicos">
+      <div class="section-heading">
+        <span>Séries históricas</span>
+      </div>
+      <div class="chart-grid" id="gridLine"></div>
+
+      <div class="section-heading">
+        <span>Distribuição</span>
+      </div>
+      <div class="chart-grid compact" id="gridHist"></div>
+
+      <div class="section-heading">
+        <span>Curto prazo</span>
+      </div>
+      <div class="chart-grid compact" id="gridFore"></div>
+    </section>
+
+    <footer>
+      Dados captados pela base meteorológica experimental <b>PP2LA</b> de <b>Lucas Correia</b> · Gama-DF.<br>
+      Atualiza automaticamente a cada 10 minutos, acompanhando a base.
+    </footer>
+  </main>
+</body>
+</html>
