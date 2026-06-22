@@ -1075,53 +1075,53 @@ function typewriter(el, text, speed = 14) {
 }
 
 function aiSetLoading() {
-  $(\"aiLoading\").removeAttribute(\"aria-hidden\");
-  $(\"aiContent\").hidden  = true;
-  $(\"aiError\").hidden    = true;
-  $(\"aiRefresh\").disabled = true;
-  $(\"aiRefresh\").classList.add(\"spinning\");
-  $(\"aiTimestamp\").textContent = \"Consultando IA…\";
+  $("aiLoading").removeAttribute("aria-hidden");
+  $("aiContent").hidden  = true;
+  $("aiError").hidden    = true;
+  $("aiRefresh").disabled = true;
+  $("aiRefresh").classList.add("spinning");
+  $("aiTimestamp").textContent = "Consultando IA…";
 }
 
 function aiSetError(msg) {
-  $(\"aiLoading\").setAttribute(\"aria-hidden\", \"true\");
-  $(\"aiContent\").hidden  = true;
-  $(\"aiError\").hidden    = false;
-  $(\"aiErrorText\").textContent = msg || \"Não foi possível gerar análise.\";
-  $(\"aiRefresh\").disabled = false;
-  $(\"aiRefresh\").classList.remove(\"spinning\");
-  $(\"aiTimestamp\").textContent = \"Falhou · tente novamente\";
+  $("aiLoading").setAttribute("aria-hidden", "true");
+  $("aiContent").hidden  = true;
+  $("aiError").hidden    = false;
+  $("aiErrorText").textContent = msg || "Não foi possível gerar análise.";
+  $("aiRefresh").disabled = false;
+  $("aiRefresh").classList.remove("spinning");
+  $("aiTimestamp").textContent = "Falhou · tente novamente";
 }
 
 async function aiSetContent(resumo, tendencia, alerta) {
-  $(\"aiLoading\").setAttribute(\"aria-hidden\", \"true\");
-  $(\"aiError\").hidden   = true;
-  $(\"aiContent\").hidden = false;
+  $("aiLoading").setAttribute("aria-hidden", "true");
+  $("aiError").hidden   = true;
+  $("aiContent").hidden = false;
 
   // Blocos paralelos → sequencial para efeito narrativo
-  await typewriter($(\"aiResumoText\"),    resumo    || \"\", 13);
+  await typewriter($("aiResumoText"),    resumo    || "", 13);
   if (tendencia) {
-    await typewriter($(\"aiTendenciaText\"), tendencia, 13);
+    await typewriter($("aiTendenciaText"), tendencia, 13);
   } else {
-    $(\"aiTendencia\").hidden = true;
+    $("aiTendencia").hidden = true;
   }
 
   const semAlerta = !alerta || /sem alert/i.test(alerta);
   if (!semAlerta) {
-    $(\"aiAlerta\").hidden = false;
-    await typewriter($(\"aiAlertaText\"), alerta, 13);
+    $("aiAlerta").hidden = false;
+    await typewriter($("aiAlertaText"), alerta, 13);
   } else {
-    $(\"aiAlerta\").hidden = true;
+    $("aiAlerta").hidden = true;
   }
 
-  $(\"aiRefresh\").disabled = false;
-  $(\"aiRefresh\").classList.remove(\"spinning\");
+  $("aiRefresh").disabled = false;
+  $("aiRefresh").classList.remove("spinning");
 
-  const now = new Intl.DateTimeFormat(\"pt-BR\", {
-    timeZone: \"America/Sao_Paulo\",
-    hour: \"2-digit\", minute: \"2-digit\"
+  const now = new Intl.DateTimeFormat("pt-BR", {
+    timeZone: "America/Sao_Paulo",
+    hour: "2-digit", minute: "2-digit"
   }).format(new Date());
-  $(\"aiTimestamp\").textContent = `Gerado às ${now} BRT`;
+  $("aiTimestamp").textContent = `Gerado às ${now} BRT`;
 }
 
 /**
@@ -1156,8 +1156,8 @@ async function fetchAIAnalysis(data) {
 
   try {
     const res = await fetch(AI_API, {
-      method: \"POST\",
-      headers: { \"Content-Type\": \"application/json\" },
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         current: extractCurrent(d),
         history: {
@@ -1182,17 +1182,17 @@ async function fetchAIAnalysis(data) {
     await aiSetContent(json.resumo, json.tendencia, json.alerta);
 
   } catch (e) {
-    console.warn(\"[AI] Falha na análise:\", e.message);
-    aiSetError(\"Análise temporariamente indisponível. Tente novamente.\");
+    console.warn("[AI] Falha na análise:", e.message);
+    aiSetError("Análise temporariamente indisponível. Tente novamente.");
   } finally {
     aiState.busy = false;
   }
 }
 
 // Botão de atualizar análise
-document.addEventListener(\"DOMContentLoaded\", () => {
-  const btn = $(\"aiRefresh\");
-  if (btn) btn.addEventListener(\"click\", () => fetchAIAnalysis());
+document.addEventListener("DOMContentLoaded", () => {
+  const btn = $("aiRefresh");
+  if (btn) btn.addEventListener("click", () => fetchAIAnalysis());
 });
 
 boot();
