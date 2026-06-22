@@ -1289,3 +1289,265 @@ footer b{
     scroll-behavior:auto !important;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   PAINEL IA — Groq Analysis
+   ═══════════════════════════════════════════════════════════════ */
+
+.ai-section{
+  margin-top:3rem;
+}
+
+.ai-badge{
+  font-size:.72rem;
+  font-weight:600;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  padding:.22em .72em;
+  border-radius:2em;
+  background:linear-gradient(120deg, rgba(130,80,255,.28), rgba(60,160,255,.22));
+  border:1px solid rgba(160,100,255,.35);
+  color:rgba(200,160,255,.9);
+  margin-left:.8rem;
+  vertical-align:middle;
+}
+
+/* ── Card principal ─────────────────────────────────────────── */
+.ai-card{
+  position:relative;
+  padding:1.6rem 1.8rem 1.2rem;
+  border-radius:var(--radius);
+  min-height:9rem;
+  overflow:hidden;
+}
+
+/* Borda esquerda com gradiente roxo-azul (identidade IA) */
+.ai-card::before{
+  content:"";
+  position:absolute;
+  inset:0 auto 0 0;
+  width:3px;
+  background:linear-gradient(180deg, #a855f7 0%, #38bdf8 60%, rgba(56,189,248,0) 100%);
+  border-radius:3px 0 0 3px;
+}
+
+/* Brilho de fundo sutil */
+.ai-card::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:radial-gradient(ellipse at 10% 50%, rgba(130,80,255,.07), transparent 60%);
+  pointer-events:none;
+}
+
+/* ── Estado: carregando ─────────────────────────────────────── */
+.ai-loading{
+  display:flex;
+  align-items:center;
+  gap:1.2rem;
+}
+
+/* Orbe animado "pensando" */
+.ai-orb{
+  flex-shrink:0;
+  width:2.6rem;
+  height:2.6rem;
+  border-radius:50%;
+  background:conic-gradient(from 0deg, #a855f7, #38bdf8, #a855f7);
+  animation:ai-spin 1.6s linear infinite;
+  box-shadow:0 0 18px rgba(168,85,247,.45), 0 0 8px rgba(56,189,248,.3);
+  position:relative;
+}
+
+.ai-orb::after{
+  content:"";
+  position:absolute;
+  inset:4px;
+  border-radius:50%;
+  background:rgba(10,16,28,.9);
+}
+
+@keyframes ai-spin{
+  to{ transform:rotate(360deg); }
+}
+
+/* Skeletons */
+.ai-skeleton-wrap{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  gap:.55rem;
+}
+
+.ai-skeleton{
+  height:.72rem;
+  border-radius:.4rem;
+  background:linear-gradient(90deg,
+    rgba(255,255,255,.06) 25%,
+    rgba(255,255,255,.13) 50%,
+    rgba(255,255,255,.06) 75%
+  );
+  background-size:200% 100%;
+  animation:ai-shimmer 1.6s ease-in-out infinite;
+}
+
+.ai-skeleton--md{ width:72%; }
+.ai-skeleton--sm{ width:44%; }
+
+@keyframes ai-shimmer{
+  0%  { background-position:200% 0; }
+  100%{ background-position:-200% 0; }
+}
+
+/* ── Estado: conteúdo ───────────────────────────────────────── */
+.ai-content{
+  display:flex;
+  flex-direction:column;
+  gap:1.1rem;
+}
+
+.ai-block{
+  display:flex;
+  flex-direction:column;
+  gap:.3rem;
+  padding-bottom:1rem;
+  border-bottom:1px solid rgba(255,255,255,.07);
+}
+
+.ai-block:last-child{
+  border-bottom:none;
+  padding-bottom:0;
+}
+
+.ai-block-label{
+  font-size:.72rem;
+  font-weight:700;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:rgba(160,130,255,.85);
+}
+
+.ai-block--alert .ai-block-label{
+  color:rgba(255,185,80,.9);
+}
+
+.ai-block--alert{
+  background:rgba(255,150,30,.06);
+  border:1px solid rgba(255,160,40,.18);
+  border-radius:.65rem;
+  padding:.8rem 1rem;
+}
+
+.ai-text{
+  font-size:.97rem;
+  line-height:1.65;
+  color:rgba(255,255,255,.88);
+  margin:0;
+  min-height:1.3em;
+}
+
+/* Cursor de digitação */
+.ai-text::after{
+  content:"|";
+  opacity:0;
+  animation:ai-cursor .7s step-end infinite;
+  margin-left:1px;
+  color:rgba(168,85,247,.8);
+}
+
+@keyframes ai-cursor{
+  50%{ opacity:1; }
+}
+
+/* ── Estado: erro ───────────────────────────────────────────── */
+.ai-error{
+  display:flex;
+  align-items:center;
+  gap:.8rem;
+  padding:.5rem 0;
+  color:rgba(255,120,100,.85);
+  font-size:.92rem;
+}
+
+.ai-error-icon{
+  font-size:1.1rem;
+  opacity:.7;
+}
+
+/* ── Rodapé do card ─────────────────────────────────────────── */
+.ai-footer{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-top:1.2rem;
+  padding-top:.8rem;
+  border-top:1px solid rgba(255,255,255,.07);
+}
+
+.ai-timestamp{
+  font-size:.74rem;
+  color:rgba(255,255,255,.38);
+  letter-spacing:.02em;
+}
+
+.ai-refresh{
+  display:inline-flex;
+  align-items:center;
+  gap:.42rem;
+  font-size:.78rem;
+  font-weight:600;
+  letter-spacing:.04em;
+  color:rgba(160,130,255,.75);
+  background:rgba(130,80,255,.1);
+  border:1px solid rgba(130,80,255,.22);
+  border-radius:2em;
+  padding:.32em .9em;
+  cursor:pointer;
+  transition:background .2s, color .2s, border-color .2s, transform .15s;
+}
+
+.ai-refresh:hover:not(:disabled){
+  background:rgba(130,80,255,.22);
+  color:rgba(200,160,255,.95);
+  border-color:rgba(160,100,255,.4);
+  transform:scale(1.04);
+}
+
+.ai-refresh:disabled{
+  opacity:.45;
+  cursor:not-allowed;
+}
+
+.ai-refresh svg{
+  transition:transform .4s ease;
+}
+
+.ai-refresh.spinning svg{
+  animation:ai-rotate .9s linear infinite;
+}
+
+@keyframes ai-rotate{
+  to{ transform:rotate(360deg); }
+}
+
+/* ── Responsivo ─────────────────────────────────────────────── */
+@media (max-width:600px){
+  .ai-card{
+    padding:1.2rem 1.2rem 1rem;
+  }
+  .ai-text{
+    font-size:.9rem;
+  }
+  .ai-badge{
+    display:none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce){
+  .ai-orb,
+  .ai-skeleton,
+  .ai-refresh.spinning svg,
+  .ai-text::after{
+    animation:none !important;
+  }
+}

@@ -156,6 +156,57 @@
       <div class="chart-grid compact" id="gridFore"></div>
     </section>
 
+
+    <section class="ai-section" aria-label="Análise inteligente da estação" id="aiSection">
+      <div class="section-heading">
+        <span>Análise por IA</span>
+        <span class="ai-badge" aria-hidden="true">Groq · Llama 3.3</span>
+      </div>
+
+      <div class="ai-card glass" id="aiCard" aria-live="polite" aria-atomic="true">
+        <!-- Estado: carregando -->
+        <div class="ai-loading" id="aiLoading" aria-hidden="true">
+          <div class="ai-orb" aria-hidden="true"></div>
+          <div class="ai-skeleton-wrap">
+            <div class="ai-skeleton"></div>
+            <div class="ai-skeleton ai-skeleton--md"></div>
+            <div class="ai-skeleton ai-skeleton--sm"></div>
+          </div>
+        </div>
+
+        <!-- Estado: conteúdo -->
+        <div class="ai-content" id="aiContent" hidden>
+          <div class="ai-block" id="aiResumo">
+            <span class="ai-block-label">Condição atual</span>
+            <p class="ai-text" id="aiResumoText"></p>
+          </div>
+          <div class="ai-block" id="aiTendencia">
+            <span class="ai-block-label">Tendência</span>
+            <p class="ai-text" id="aiTendenciaText"></p>
+          </div>
+          <div class="ai-block ai-block--alert" id="aiAlerta" hidden>
+            <span class="ai-block-label">⚠ Alerta</span>
+            <p class="ai-text" id="aiAlertaText"></p>
+          </div>
+        </div>
+
+        <!-- Estado: erro -->
+        <div class="ai-error" id="aiError" hidden>
+          <span class="ai-error-icon" aria-hidden="true">✕</span>
+          <span id="aiErrorText">Não foi possível gerar análise.</span>
+        </div>
+
+        <!-- Rodapé do card -->
+        <div class="ai-footer">
+          <span class="ai-timestamp" id="aiTimestamp"></span>
+          <button class="ai-refresh" id="aiRefresh" type="button" aria-label="Atualizar análise da IA" title="Atualizar análise">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+            Atualizar
+          </button>
+        </div>
+      </div>
+    </section>
+
     <footer>
       Dados captados pela base meteorológica experimental <b>PP2LA</b> de <b>Lucas Correia</b> · Gama-DF.<br>
       Atualiza automaticamente a cada 10 minutos, acompanhando a base.

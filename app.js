@@ -1,4 +1,5 @@
-const API = "/.netlify/functions/weather";
+const API    = "/.netlify/functions/weather";
+const AI_API = "/.netlify/functions/groq-analysis";
 
 const $ = id => document.getElementById(id);
 const num = v => {
@@ -12,6 +13,12 @@ const state = {
   period: "24h",
   lastWeather: { rain: 0, temp: null, umi: null },
   sky3d: null
+};
+
+// Cache de dados e controle de estado da IA
+const aiState = {
+  lastData: null,
+  busy: false
 };
 
 async function getData(period){
@@ -923,6 +930,11 @@ async function loadHistory(period){
     }
     renderCharts(d);
     if(period === "24h") updateCurrent(d);
+
+    // Salva para uso da IA e dispara análise
+    aiState.lastData = d;
+    fetchAIAnalysis(d);
+
     const periodNames = { "24h":"Últimas 24 h", week:"Última semana", month:"Último mês", year:"Último ano", decade:"Última década" };
     const last = d.time[d.time.length - 1];
     status.textContent = `${periodNames[period] || period} · ${d.time.length} leituras · atualizado ${last}`;
@@ -1036,6 +1048,151 @@ async function boot(){
     const { rain, temp, umi } = state.lastWeather;
     applySky(brasiliaHour(), rain, temp, umi);
   }, 600000);
+  setInterval(() => fetchAIAnalysis(), 600000);           // análise IA a cada 10 min
 }
+
+
+// ─── Integração IA (Groq) ─────────────────────────────────────────────────────
+
+/**
+ * Anima o texto caractere a caractere no elemento alvo.
+ * Resolve quando termina.
+ */
+function typewriter(el, text, speed = 14) {
+  return new Promise(resolve => {
+    el.textContent = "";
+    let i = 0;
+    const tick = () => {
+      if (i < text.length) {
+        el.textContent += text[i++];
+        setTimeout(tick, speed + Math.random() * 8);
+      } else {
+        resolve();
+      }
+    };
+    tick();
+  });
+}
+
+function aiSetLoading() {
+  $(\"aiLoading\").removeAttribute(\"aria-hidden\");
+  $(\"aiContent\").hidden  = true;
+  $(\"aiError\").hidden    = true;
+  $(\"aiRefresh\").disabled = true;
+  $(\"aiRefresh\").classList.add(\"spinning\");
+  $(\"aiTimestamp\").textContent = \"Consultando IA…\";
+}
+
+function aiSetError(msg) {
+  $(\"aiLoading\").setAttribute(\"aria-hidden\", \"true\");
+  $(\"aiContent\").hidden  = true;
+  $(\"aiError\").hidden    = false;
+  $(\"aiErrorText\").textContent = msg || \"Não foi possível gerar análise.\";
+  $(\"aiRefresh\").disabled = false;
+  $(\"aiRefresh\").classList.remove(\"spinning\");
+  $(\"aiTimestamp\").textContent = \"Falhou · tente novamente\";
+}
+
+async function aiSetContent(resumo, tendencia, alerta) {
+  $(\"aiLoading\").setAttribute(\"aria-hidden\", \"true\");
+  $(\"aiError\").hidden   = true;
+  $(\"aiContent\").hidden = false;
+
+  // Blocos paralelos → sequencial para efeito narrativo
+  await typewriter($(\"aiResumoText\"),    resumo    || \"\", 13);
+  if (tendencia) {
+    await typewriter($(\"aiTendenciaText\"), tendencia, 13);
+  } else {
+    $(\"aiTendencia\").hidden = true;
+  }
+
+  const semAlerta = !alerta || /sem alert/i.test(alerta);
+  if (!semAlerta) {
+    $(\"aiAlerta\").hidden = false;
+    await typewriter($(\"aiAlertaText\"), alerta, 13);
+  } else {
+    $(\"aiAlerta\").hidden = true;
+  }
+
+  $(\"aiRefresh\").disabled = false;
+  $(\"aiRefresh\").classList.remove(\"spinning\");
+
+  const now = new Intl.DateTimeFormat(\"pt-BR\", {
+    timeZone: \"America/Sao_Paulo\",
+    hour: \"2-digit\", minute: \"2-digit\"
+  }).format(new Date());
+  $(\"aiTimestamp\").textContent = `Gerado às ${now} BRT`;
+}
+
+/**
+ * Extrai os valores mais recentes de cada série para enviar à IA.
+ */
+function extractCurrent(d) {
+  if (!d || !d.time || !d.time.length) return {};
+  const i = d.time.length - 1;
+  return {
+    temp: num(d.temp?.[i]),
+    feel: num(d.feel?.[i]),
+    umi:  num(d.umi?.[i]),
+    dew:  num(d.dew?.[i]),
+    rain: num(d.rain?.[i]),
+    qnh:  num(d.qnh?.[i]),
+    pabs: num(d.pabs?.[i])
+  };
+}
+
+async function fetchAIAnalysis(data) {
+  if (aiState.busy) return;
+  aiState.busy = true;
+
+  // Usa dados passados ou do cache
+  const d = data || aiState.lastData;
+  if (!d) {
+    aiState.busy = false;
+    return;
+  }
+
+  aiSetLoading();
+
+  try {
+    const res = await fetch(AI_API, {
+      method: \"POST\",
+      headers: { \"Content-Type\": \"application/json\" },
+      body: JSON.stringify({
+        current: extractCurrent(d),
+        history: {
+          temp: d.temp,
+          feel: d.feel,
+          umi:  d.umi,
+          dew:  d.dew,
+          rain: d.rain,
+          qnh:  d.qnh,
+          pabs: d.pabs
+        },
+        period: state.period
+      })
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || `HTTP ${res.status}`);
+    }
+
+    const json = await res.json();
+    await aiSetContent(json.resumo, json.tendencia, json.alerta);
+
+  } catch (e) {
+    console.warn(\"[AI] Falha na análise:\", e.message);
+    aiSetError(\"Análise temporariamente indisponível. Tente novamente.\");
+  } finally {
+    aiState.busy = false;
+  }
+}
+
+// Botão de atualizar análise
+document.addEventListener(\"DOMContentLoaded\", () => {
+  const btn = $(\"aiRefresh\");
+  if (btn) btn.addEventListener(\"click\", () => fetchAIAnalysis());
+});
 
 boot();
